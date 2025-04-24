@@ -1,0 +1,65 @@
+---
+title: "Executive Summary"
+subtitle: |
+  | Final Project 
+  | Data Science 1 with R (STAT 301-1)
+author: "Sarah Norman"
+pagetitle: "Executive Summary Sarah Norman"
+
+format:
+  html:
+    toc: true
+    toc-depth: 4
+    toc-location: left
+    embed-resources: true
+    link-external-newwindow: true
+
+execute:
+  warning: false
+
+from: markdown+emoji
+citation-location: document
+reference-location: document
+---
+
+::: {.callout-tip icon=false}
+
+## Github Repo Link
+
+[Sarah's Repo Link](https://github.com/stat301-1-2024-fall/final-project-1-sarahdnor.git)
+
+:::
+
+# Executive Summary
+
+## Introduction
+
+This report presents an exploratory data analysis (EDA) of survey data collected in Malaysia by students from Universiti Teknologi Malaysia.[^1] It provides insights into individuals' perceptions of various aspects of skincare, including their desire to learn more, monthly spending on products, ingredient preferences, and the most prevalent skin concerns. Additionally, the survey explores respondents' perceptions of and willingness to use AI technology to address these concerns. This report aims to inform marketing strategies for AI skincare scanning technology (referred to as 'AI' throughout the report), tailoring them to different demographic groups based on the analysis of the aforementioned variables.
+
+Reservations about the use of AI are prevalent due to its new and unfamiliar nature. As a result, understanding current preconceived notions and identifying customer needs are necessary to drive sales and revenue while informing strategic decisions, marketing choices, product development, and  fostering customer trust and engagement.
+
+## Objective
+
+The goal of this report is to conduct a deeper analysis of the respondents, examining how different demographics may have varying skincare needs and, consequently, differing responses to AI skin-scanning technology.
+
+## Methodology & General Findings
+
+The core evaluation of this report includes an analysis of the following four sections: Distribution of Respondent Characteristics, Data Broken Down by Gender, Prominent Skin Concerns, and Respondent Perceptions of AI Skincare Technology. These sections collectively provide demographic-specific insights into skin concerns, with the final section exploring how and why respondents may be opposed to or willing to use AI skincare technology to address them. 
+Prior to any analysis, extensive data tidying and cleaning were required as variable names were incorrectly formatted and hard to understand, variable types were difficult to interpret, and the data lacked an initial codebook.
+
+Section 1 Distribution of Respondent Characteristics: analyzes respondents age, cultural identity, gender and occupation, revealing that the majority of respondents were students, females and malaysians enabling accurate interpretation of the data and contextualizing of findings.
+
+Section 2 Data Broken Down by Gender: analyzes disparities in responses between males and females, providing insights into whether the survey supports existing hygiene stereotypes. The survey revealed that women tend to spend more on skincare, view it as more important, and have more experience using it. However, the presence of men in the data challenges the notion that men don’t care about or invest in skincare at all, suggesting a possible lack of targeted marketing or products for men.
+
+Section 3 Prominent Skin Concerns: analyzes the most prominent skin concerns and types among respondents, revealing that combination skin, acne breakouts, and oily skin are the most common concerns, respectively, across all respondents. This section also highlights that females face a wider variety of skin concerns compared to males, perhaps providing context for the disparities observed in the previous section. Additionally, it shows that struggles with these three concerns are relatively consistent across different cultural identities. This section offers valuable insight into the types of technology respondents desire based on their specific skin concerns.
+
+Section 4 Respondent Perceptions of AI Skincare Technology: reviews responses to all technology and AI-related survey questions, revealing that individuals who prefer natural ingredients tend to be more opposed to AI. Interestingly, it also showed that those who spend more time searching for skincare products are not necessarily more excited about the potential of AI. This section highlights that respondents with a strong desire to learn more about skincare are generally more enthusiastic about the potential for AI. Additionally, it demonstrates that few respondents with positive perceptions of general technology held negative perceptions of AI, underscoring a unique concern specifically regarding the use of AI.
+
+## Recommendations
+
+As a result of the EDA, AI skin-scanning technology in Malaysia marketed to students should aim to target those experiencing combination skin, acne breakouts, and oily skin, with an additional emphasis on the benefits for men. Marketing efforts should also focus on highlighting the efficiency of AI and providing a clear explanation of how it works to address user concerns about the new technology, as alluded to in Section 4.
+
+Further research should focus on conducting a comparative analysis between the data used in this report and more recent datasets, as the current dataset is relatively outdated, particularly in light of the recent surge in AI usage. This comparison could offer valuable insights into how perceptions have evolved over time and which technologies have been successfully integrated into the market.
+
+[^1]: Nurunnajwa, Harith Hakim, and Azri Hadif. (2022). Skincare and Technology Survey Among Malaysian [Data set]. Kaggle. [Skincare and Technology Survey Among Malaysians](https://www.kaggle.com/datasets/nurunnz/skincare-survey-among-malaysian-2021?resource=download) https://doi.org/10.34740/KAGGLE/DSV/3371747
+

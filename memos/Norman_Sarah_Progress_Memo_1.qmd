@@ -1,0 +1,156 @@
+---
+title: "Progress Memo 1"
+subtitle: |
+  | Final Project 
+  | Data Science 1 with R (STAT 301-1)
+author: "Sarah Norman"
+pagetitle: "PM1 Sarah Norman"
+
+format:
+  html:
+    toc: true
+    toc-depth: 4
+    toc-location: left
+    embed-resources: true
+    link-external-newwindow: true
+
+execute:
+  warning: false
+
+from: markdown+emoji
+reference-location: margin
+citation-location: margin
+---
+
+```{r}
+#| label: reading data/loading packages
+#| echo: false
+
+library(tidyverse)
+library(readr)
+library(naniar)
+library(skimr)
+library(here)
+
+skincare_malaysia <- read_csv(here("data/skincare_survey_malaysia_2021.csv"))
+```
+
+::: {.callout-tip icon=false}
+
+## Github Repo Link
+
+[Sarah's Repo Link](https://github.com/stat301-1-2024-fall/final-project-1-sarahdnor.git)
+
+:::
+:::{.callout-tip icon=false}
+
+## Data Source
+
+Link:
+
+[Skincare and Technology Survey Among Malaysians](https://www.kaggle.com/datasets/nurunnz/skincare-survey-among-malaysian-2021?resource=download)
+
+APA Citation:
+
+Nurunnajwa, Harith Hakim, and Azri Hadif. (2022). Skincare and Technology Survey Among Malaysian [Data set]. Kaggle. https://doi.org/10.34740/KAGGLE/DSV/3371747
+
+:::
+
+## About the data:
+
+The Skincare Survey in Malaysia 2021 CSV dataset was collected by Nurunnajwa, Harith Hakim, and Azri Hadif, all of whom were students at Universiti Teknologi Malaysia at the time of data collection. I accessed this data on 10/31/2024 from Kaggle. The Temporal Coverage Start Date (when data collection began) was 11/30/2021, and the Temporal Coverage End Date (when data collection ended) was 12/30/2022. The specific report referenced in this memo does not have a published date; however, it appears that viewers have been downloading the dataset since October 2007, and the overall report was last updated three years ago. As stated in the report, "the goal of this data collection is to know the skin problems among Malaysians and the suitability of AI Face Scanners to track skin issues as a quick fix."
+
+
+## Why this data
+
+Given my major in International Studies, I take every opportunity to explore different countries of interest. Being born in Malaysia, I started examining datasets on Malaysia. I found this particular dataset intriguing due to its unusual specificity. I also I recall cosmetic surgery being a common topic of conversation among my peers when I was in the Philippines attending an international school. I was also drawn to the dataset's mention of AI, given its current prominence. I find it even more intriguing given that the dataset is quite old, prior to the surge in AI usage. This could provide an opportunity to further explore how AI technology has evolved. There is also an opportunity to discuss the disparities in perceptions of skincare between Western and Asian countries. As a young woman, I resonate with the challenges surrounding appearance and am eager to understand more about its impact on Southeast Asian culture. Additionally, I appreciate the variety of variables in this dataset, which offer a chance to experiment with both numbers and strings, further developing my skills.
+
+## Data quality & complexity check
+
+
+```{r}
+#| label: tbl-1
+#| tbl-cap: "Summary of Data"
+#| echo: false
+
+skim_without_charts(skincare_malaysia)
+```
+
+
+
+As seen in @tbl-1 the dataset has a total of 31 variables with a variety of both character and numerical variable types (17 and 14, respectively). The observations for the dataset, however, can be considered quite small, with the dataset having only 76 observations. However, I personally appreciate this dataset's size because I feel it represents a more realistic sample size for a survey that might be conducted on campus.
+
+```{r}
+#| label: tbl-2
+#| tbl-cap: "Count of Different Occupations Surveyed"
+#| echo: false
+
+skincare_malaysia|>
+  count(Occupation) |> 
+  knitr::kable()
+
+
+```
+
+```{r}
+#| label: tbl-3
+#| tbl-cap: "Distribution of Gender"
+#| echo: false
+
+skincare_malaysia|>
+  count(Gender) |> 
+  knitr::kable()
+
+```
+
+
+The vast majority of the sample are university students (with 60 of the 76 observations being from students) and females (with 58 of the observations being female and 18 being male) which can be seen in @tbl-2 and @tbl-3.
+
+This may lend the dataset to bias, given that its purpose is to better understand skin problems/perceptions and the use of AI face scanners across the country.
+
+```{r}
+#| label: tbl-4
+#| tbl-cap: "Distribution of 'Race'"
+#| echo: false
+
+skincare_malaysia|>
+  distinct(Race) |>
+  knitr::kable()
+```
+
+It is also important to note that there is more than just one distinct race/nationality represented in the data set, despite the study claiming to explore the perceptions of specifically Malaysians. The report also claims that the geospatial coverage of the survey is "worldwide". This conflicting information will be further explored in the misc section of this memo.
+
+However, The data does not experience significant missingness issues, only encountering missing values for age and the question "Do share your skincare goals and motivation with us!"
+
+```{r}
+#| label: fig-1
+#| echo: false
+
+skincare_malaysia |>
+  select("Age", "Do share your skincare goals and motivation with us!") |>
+  gg_miss_var() +
+  labs(
+    title = "Distribution of Missing Values"
+  )
+
+```
+
+The final comments question ("Do share your skincare goals and motivation with us!") has a total of 18 missing values, while the age variable has 1 missing value (not posing great issues for the dataset) as seen in @fig-1. Given that the final comments question has relatively significant missingness, it can be inferred that it was an optional question.
+
+The data appears to be relatively tidy. However, the column titles do not following the snake_case naming convention. Column names include capital letters and spaces but are also quite lengthy. Name cleaning and rewriting of column names (a combination of both the clean_names() function from the janitor package and string functions) will likely need to be done for clarity and aesthetics.
+
+## Potential data issues
+
+The last column of this dataset, alongside the multiple-choice answer questions (e.g., "Which, if any, of the following statements applies to you?"), is part of what drew me to this dataset, as they pose new challenges that I have yet to face in the course. However, I have yet to work with cells containing multiple values. Additionally, the final column, given that it consists of unique strings (individual written responses), will be difficult to examine but will provide interesting insights about perceptions of skincare and individual motivations. Some cleaning will also have to be done regarding some variable names such as the variables present under the "races" column shown above- perhaps some of this data can be changed into a factor data type. The term "race" also needs to be established, or perhaps the column name should be changed for greater accuracy.
+
+## Misc
+
+There are some point of confusion in the dataset:
+
+The description and written components of the data contain various grammatical errors and conflicting points. This may indicate that the text was translated and could lead to challenges during the EDA. Despite these issues, the text remains understandable but appears less professional and organized.
+
+There seems to be conflicting information regarding the demographics of the study. For example, the dataset claims to have worldwide geospatial coverage but has proportionally few responses from respondents of different races/nationalities. Additionally, there is some confusion about which age groups are targeted for the study, as the description discusses general Malaysian culture but also emphasises women and teenagers. The survey also seems to have been conducted in a university setting based on occupational observations.
+
+Although this poses some confusion, as long as these components are clarified in the EDA, I don't believe they will create issues during analysis, as the values in the dataset are relatively clear and can always be manipulated.
+
+Upon initial review of the data, some interesting areas for exploration include distinguishing differences across gender (acknowledging that there are more females than males represented in the dataset). It will also be interesting to extract similarities within the responses for the final questions, "Which, if any, of the following statements applies to you?" and "Do share your skincare goals and motivation with us!", especially since the final question is open-ended. I think there are a handful of different relationships that can be mapped.

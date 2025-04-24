@@ -1,0 +1,506 @@
+---
+title: "Exploring Malaysian Perceptions of Skincare and Potential Use of AI: An EDA"
+subtitle: |
+  | Final Project 
+  | Data Science 1 with R (STAT 301-1)
+author: "Sarah Norman"
+pagetitle: "FP Sarah Norman"
+date: "December 11, 2024"
+
+format:
+  html:
+    toc: true
+    toc-depth: 4
+    toc-location: left
+    embed-resources: true
+    link-external-newwindow: true
+
+execute:
+  warning: false
+
+from: markdown+emoji
+reference-location: margin
+citation-location: margin
+
+---
+```{r}
+#| label: reading data/loading packages
+#| echo: false
+
+library(tidyverse)
+library(readr)
+library(naniar)
+library(skimr)
+library(janitor)
+library(knitr)
+library(ggcorrplot)
+library(DT)
+library(gridExtra)
+
+skincare_malaysia <- read_csv("data/skincare_malaysia_2021_cleaned.csv")
+skincare_malaysia_original <- read_csv("data/skincare_survey_malaysia_2021.csv")
+skincare_malaysia_codebook <- read_csv("data/skincare_malaysia_2021_codebook.csv")
+
+```
+
+::: {.callout-tip icon=false}
+
+## Github Repo Link
+
+[Sarah's Repo Link](https://github.com/stat301-1-2024-fall/final-project-1-sarahdnor.git)
+
+:::
+
+# Introduction
+
+:::{.callout-tip icon=false}
+
+## Data Source
+
+Link:
+
+[Skincare and Technology Survey Among Malaysians](https://www.kaggle.com/datasets/nurunnz/skincare-survey-among-malaysian-2021?resource=download)
+
+APA Citation:
+
+Nurunnajwa, Harith Hakim, and Azri Hadif. (2022). Skincare and Technology Survey Among Malaysian [Data set]. Kaggle. https://doi.org/10.34740/KAGGLE/DSV/3371747
+
+:::
+
+
+## About the Data
+
+The Skincare Survey in Malaysia 2021 CSV dataset was collected by Nurunnajwa, Harith Hakim, and Azri Hadif, all of whom were students at Universiti Teknologi Malaysia at the time of data collection. I accessed this data on 10/31/2024 from Kaggle. The Temporal Coverage Start Date (when data collection began) was 11/30/2021, and the Temporal Coverage End Date (when data collection ended) was 12/30/2022. The specific report referenced in this memo does not have a published date; however the overall report was last updated three years ago (2021). As stated in the Kaggle report, "the goal of this data collection is to know the skin problems among Malaysians and the suitability of AI Face Scanners to track skin issues as a quick fix."
+
+## Rationale for Chosen Data and Personal Motivations
+
+Given my major in International Studies, I take every opportunity to explore different countries of interest. Being born in Malaysia, I started examining datasets on Malaysia. I found this particular dataset intriguing due to its unusual specificity.
+
+I recall cosmetic surgery being a common topic of conversation among my peers when I was in the Philippines attending an international school and was additionally drawn to the dataset's mention of AI, given its current prominence. I find it even more intriguing given that the dataset is quite old, prior to the surge in AI usage. This could provide an opportunity to further explore how AI technology has evolved. With this data there is also an opportunity to discuss the disparities in perceptions of skincare between Western and Southeast Asian cultures.
+
+As a young woman, I relate to the challenges surrounding appearance and am eager to explore their impact on Southeast Asian cultures. I aim to conduct an in-depth analysis of this dataset to provide insights into how skincare is perceived in Southeast Asian cultures, with a primary focus on Malaysians, and how AI can be tailored and leveraged to address these concerns.
+
+Lastly, I appreciate the variety of variables in this dataset, which offer a chance to experiment with both numbers and strings, further developing my data science skills.
+
+# What is AI Skin Scanning
+
+The dataset used for this report aims to support the application of AI skin scanning technology, designed to provide accurate and comprehensive assessments of an individual’s skin. These technologies, often in the form of apps, leverage AI to analyze various skin concerns and characteristics, enhancing the way people understand their skin health.
+
+For example, Perfect Corp Skin Tech is a platform that utilizes AI to detect a range of skin concerns such as moisture levels, oiliness, redness, and even assesses "skin age" through "state-of-the-art AI deep learning technology" (YouCam, 2024). It can help individuals understand their skin's current condition by identifying its type and key features, making it easier to choose suitable skincare products. (YouCam, 2024)
+
+Any mentioned of AI for the remainder of this report will be specifically referencing AI utilized for skin scanning technology. 
+
+## Exploratory Data Analysis (EDA) Overview
+
+This EDA examines the referenced dataset to address various sub-questions, offering insights into general perceptions of skincare and the potential applications of AI in skincare technology. The analysis delves into the demographics of the sample, evaluates whether the data aligns with preconceived hygiene stereotypes related to gender, identifies the most prominent skin concerns, and explores the reasons respondents may support or oppose AI-driven skincare solutions.
+
+# Data Overview and Quality
+
+This section of the report provides an overview of the dataset, followed by an evaluation of its quality. It discusses the number of variables, variable types, observations, and distinct values within the original dataset. Additionally, it addresses issues related to missing data, anticipated data cleaning processes, and the inherent limitations of the data.
+
+
+```{r}
+#| label: tbl-1
+#| tbl-cap: "Summary of Data"
+#| echo: false
+
+datatable(skim_without_charts(skincare_malaysia_original))
+
+```
+
+
+As seen in @tbl-1 the dataset has a total of 31 variables with a variety of both character and numerical variable types (17 and 14, respectively). The observations for the dataset, however, can be considered quite small, with the dataset having only 76 observations. Albeit a small sample, this dataset represents a realistic size for surveys conducted on a university campus, making it valuable for future research by students like myself.
+
+```{r}
+#| label: tbl-2
+#| tbl-cap: "Distribution of Occupations"
+#| echo: false
+
+skincare_malaysia_original|>
+  count(Occupation) |> 
+  kable()
+
+```
+
+```{r}
+#| label: tbl-3
+#| tbl-cap: "Distribution of Gender"
+#| echo: false
+
+skincare_malaysia_original|>
+  count(Gender) |> 
+  kable()
+
+```
+
+
+The majority of the sample consists of university students (60 out of 76 observations, 78.9%) and females (58 observations are female, compared to 18 male, 76.3% female and 23.7% male), as shown in @tbl-2 and @tbl-3.
+
+```{r}
+#| label: tbl-4
+#| tbl-cap: "Distribution of 'Race'"
+#| echo: false
+
+skincare_malaysia_original|>
+  distinct(Race) |>
+  kable()
+
+```
+
+As shown in @tbl-4, the dataset includes more than one distinct 'race,' despite the study's claim to focus on the perceptions of specifically Malaysians. Additionally, the report states that the survey's geospatial coverage is 'worldwide,' presenting conflicting information that will be further examined in the miscellaneous section of this report.
+
+However, The dataset does not exhibit substantial issues with missingness, only encountering missing values for age and the question "Do share your skincare goals and motivation with us!"
+
+![](plots/missingness_plot.png){#fig-1}
+
+The final comments question ("Do share your skincare goals and motivation with us!") has a total of 18 missing values, while the age variable has 1 missing value (not posing great issues for the dataset) as seen in @fig-1. Given that the final comments question has a substantial amont of missing answers, it can be inferred that it was an optional question.
+
+## Data Cleaning and Potential Data Issues
+
+The column titles do not follow the snake_case naming convention. Column names include capital letters and spaces but are also quite lengthy. Name cleaning and rewriting of column names (a combination of both the clean_names() function from the janitor package and string functions) will likely need to be done for clarity and aesthetics. The original dataset did not come with a codebook.
+
+Some cleaning will also have to be done regarding values, such as those in the "races" column shown above. This data may be converted into a factor data type and reordered. The term "race" also needs to be clearly defined, or the column name might need to be changed for greater accuracy.
+
+The last column of this dataset ("Do share your skincare goals and motivation with us!"), alongside the multiple-choice answer questions (e.g., "Which, if any, of the following statements applies to you?"), will require unique string coding to extract meaningful findings.
+
+Additionally, the final column, consisting of unique strings (individual written responses), will be challenging to analyze but could provide valuable insights into perceptions of skincare and individual motivations.
+
+## Misc
+
+There are some points of confusion in the dataset:
+
+The description and written components of the data contain various grammatical errors and conflicting points. This may indicate that the text was translated and could lead to challenges during the EDA. Despite these issues, the text remains understandable but appears less professional and organized.
+
+There appears to be conflicting information regarding the demographics of the study. For instance, while the dataset claims to have worldwide geospatial coverage, it contains proportionally few responses from diverse races and nationalities. Additionally, there is confusion about the targeted age groups, as the description highlights general Malaysian culture but also emphasizes women and teenagers.
+
+Although these aspects of the data pose some confusion, as long as these components are clarified in the EDA, I don't believe they will create issues during analysis, as the values in the dataset are relatively clear and can always be adjusted if needed.
+
+# Tidying Data and Codebook Creation
+
+As mentioned previously, this dataset requires tidying prior to EDA. However, upon further investigation, extensive cleaning was needed in addition to the creation of a codebook.
+
+The following steps were taken to tidy the data:
+
+All columns have been renamed to follow the snake_case naming convention and revised for clarity, as many of the variable titles were excessively long and contained grammatical errors. This required each column to be renamed individually. In addition to cleaning names, variables were converted to lowercase (except for binary yes or no values). The newly named `cultural_identity`, `occupation`, `gender`, `purchase_frequency`, `product_choice_process`, `skincare_spending`, and `skincare_experience` columns were converted to factors for ease and clarity of analysis
+
+The `skincare_spending` and `age` variables were reordered chronologically to make the data analysis more intuitive. The `cultural_identity` variable was modified to group respondents who provided the same value with slight variations, such as differences in capitalization or acronyms, under the same factor level.
+
+```{r}
+#| label: tbl-5
+#| echo: false
+#| tbl-cap: "Variable Name Comparison"
+
+# Comparing new column names
+
+column_comparison <- tibble(
+  "New Names" = names(skincare_malaysia),
+  "Original Names" = names(skincare_malaysia_original)
+)
+
+datatable(column_comparison)
+
+```
+
+@tbl-5 shows a side-by-side comparison of the newly created names and the dataset's original names, highlighting the now clearer and more concise names following correct naming conventions.
+
+```{r}
+#| label: tbl-6
+#| echo: false
+#| tbl-cap: "Skincare Malaysia Codebook"
+
+# Creating codebook
+
+datatable(skincare_malaysia_codebook)
+```
+
+The original dataset lacked a codebook, necessitating the creation of the codebook shown in @tbl-6. Concerns arose due to the absence of a description for the ranking scale. As a result, the values represented by 1 to 5 had to be inferred. This was achieved by examining the first variable with this numeric ranking, `skincare_importance`, and deducing that most individuals considered skincare to be important. Since 5 was more predominant than 1, it was determined that 5 indicated skincare was very important, while 1 indicated that skincare was not important. This pattern was then used to infer the rankings for the other variables. While not ideal, thorough analysis can still be conducted.
+
+## Correlation Analysis
+
+A skincare correlation matrix has been created to more clearly see the relationships between all numerical variables at once. By visualizing these relationships, patterns and trends can be identified, fostering a better understanding of how variables impact one another, fueling further exploration and guiding future sections of this report.
+
+![](plots/skincare_malaysia_means_correlation_plot.png){#fig-2}
+
+Many of the correlations in @fig-2 are fairly intuitive. For example, the average perceived skincare importance (`mean_skincare_importance`) and the average ranking for time spent finding skincare (`mean_time_spent_finding_skincare`) show a strong positive correlation, which makes sense, as those who value skincare are likely to spend more time ensuring they are getting the best products and/or are constantly searching for new products to try. 
+
+There are several variables that reflect respondents' skincare knowledge, including their self-assessment of knowledge about skincare product ingredients (`mean_unaware_ingredient_quality`), understanding of products in general (`understanding_of_products`), desire for a skincare routine (`mean_desire_routine`), desire for skincare solutions (`mean_want_solutions`), and overall interest in learning more (`mean_desire_know_more`). Based on the correlation observed in the graph, we can see a strong positive correlation between the mean desire to find skincare solutions (`mean_want_solutions`) and the mean desire to learn more about skincare (`mean_desire_know_more`). This relationship makes sense, as those who are actively seeking solutions are likely to be more open to learning about new skincare products, ingredients, and routines to address their needs.
+
+As a result of the various intuitive correlations, not all of the variables will be explicitly used in this report to avoid redundancy and repetitive insights.
+
+# Exploration
+
+## Distribution of Respondent Characteristics
+
+The following section will engage in a univariate analysis of respondent characteristics to provide greater insight into the sample. This analysis will include exploring the distributions of cultural identity, occupation, age, and gender. A thorough understanding of demographics is necessary for data interpretation and contextualizing findings, as factors such as age and cultural identity can influence responses.
+
+![](plots/distribution_of_cultural_identity_plot.png){#fig-3}
+
+The above analysis was conducted to gain a greater understanding of the cultural makeup of the respondents.
+@fig-3 shows that there are 12 unique cultural identities. These distinct values were originally under the column titled "race." However, this column was renamed to "cultural identity" for improved clarity.
+
+This title was chosen because "race" was not applicable, as it incorrectly categorized the values. Similarly, "ethnicity" was not a suitable descriptor, as some terms, such as Bumiputra Sabah and Bajau, are regional or legal classifications in Malaysia rather than purely ethnic groups. Additionally, terms like Libya and African denote nationalities or continents, which are not ethnicities. As a result, this variable is titled cultural identity, which is broad but still captures the diversity of the sample.
+
+From @fig-3, we can see that there is a significant number of Malaysians (both those who identified as Malay and Bumiputra Sabah). This makes sense, given that the survey was conducted in Malaysia. However, we can still observe that a significant portion of respondents are not Malaysian.
+
+![](plots/distribution_of_cultural_identity_other_plot.png){#fig-4}
+
+We can see the distribution of Malaysians to other cultural identities more clearly in @fig-4. In the above graph, Sabahans were included under Malaysians so that we can more clearly see the distribution of those who are Malaysian and those who are not. 
+
+A predominantly Malaysian sample implies that the data generally reflects Malaysian cultural norms, behaviors, and perceptions. Analysis may therefore prove valuable in the context of Malaysia.
+
+However, the large proportion of Malaysians may also lead to skewed results that don't accurately reflect other groups with differing cultural identities, as their skincare behaviors, cultural norms, and perceptions may vary due to this attribute. The findings, therefore, may not capture the diversity of skincare behaviors and perceptions. This may limit the applicability of the findings to broader or different cultural groups.
+
+![](plots/distribution_of_occupation_plot.png){#fig-5}
+
+@fig-5 displays the distribution of occupations among respondents. From the graph, we can see that the majority of respondents are students.
+
+![](plots/distribution_of_occupation_other_plot.png){#fig-6}
+
+@fig-6 more clearly shows the distribution of students compared to those with other occupations, indicating that there are significantly more students than any other occupation. This makes sense given that the data was collected by students from Universiti Teknologi Malaysia. This once again highlights how findings may be limited to a specific demographic of Malaysians (Malaysian students) and may be less generalizable to individuals in other occupations.
+
+![](plots/distribution_age_plot.png){#fig-7}
+
+@fig-7 shows the distribution of age amongst respondents, broken up into 5-year age brackets. We can see that ages between 15 to 20 and 20 to 25 are the most prominent. This makes sense given that the vast majority of respondents are university students. However, it would have been useful to have the raw age of respondents, as there is a significant difference between individuals who are 15 and those who are 20, especially since the teenage years can be very formative, particularly with regard to puberty. This data supports previous analysis that the majority of respondents are younger students; however, given the large brackets for age, individual analysis of age may not be very informative.
+
+```{r}
+#| label: tbl-proportion-of-gender
+#| echo: false
+
+# Proportion of gender
+
+gender_proportion <- skincare_malaysia |>
+    group_by(gender) |>
+    summarise(count = n()) |>
+    mutate(proportion = count / sum(count))
+
+kable(gender_proportion, caption = "Proportion of Gender")
+
+```
+Finally, @tbl-proportion-of-gender displays the proportion of male to female respondents from the survey, showing that there were significantly more females than males who completed it.
+
+Based on the above analysis, we can see that the majority of respondents are females, students, and Malaysians, which provides a clearer understanding of the demographic makeup of the dataset and allows for more accurate assumptions and conclusions to be drawn.
+
+## Gender Explicit Analysis
+
+The following section will focus on bivariate and multivariate analysis to explore the disparities between female and male respondents. This analysis is driven by stereotypes about the attitudes of women and men regarding appearance, such as the belief that women care more about their appearance and that men are less hygienic. The purpose of this analysis is to test these stereotypes.
+
+The below table displays the proportion of males and females that have experience using skincare.
+
+```{r}
+#| label: tbl-experience_by_gender
+#| echo: false
+#| tbl-cap: "Proportion of Females and Males with Skincare Experience"
+
+gender_experience_skincare <- skincare_malaysia |>
+  group_by(gender) |>
+  summarise(
+    prop_skincare_experience_yes = mean(skincare_experience == "Yes", na.rm = TRUE)
+    )
+
+kable(gender_experience_skincare)
+
+```
+
+@tbl-experience_by_gender indicates that men have less experience using skincare compared to women. However, it is important to note that, as shown in @tbl-proportion-of-gender, fewer males are represented in the survey, which may make the results less accurate for this demographic.
+
+```{r}
+#| label: tbl-importance_by_gender
+#| echo: false
+#| tbl-cap: "Average Perceived Skincare Importance Rank for Females and Males"
+
+gender_importance_skincare <- skincare_malaysia |>
+  group_by(gender) |>
+  summarise(
+    prop_skincare_experience_yes = mean(skincare_importance)
+    )
+
+kable(gender_importance_skincare)
+```
+
+@tbl-importance_by_gender indicates that, on average, men in the sample view skincare as less important than women do.
+
+![](plots/skincare_important_and_ingredient_knowledge.png){#fig-8}
+
+@fig-8 shows no clear relationship between valuing skincare and ingredient understanding, as there is no strong linear correlation between these variables. However, the data points concentrate in the top half of the plot as understanding increases, suggesting a slight positive trend for both groups. This indicates that as respondents gain more knowledge about skincare ingredients, their appreciation of skincare may also rise, though not in a strongly predictable manner. Additionally, this suggests that knowledge is not necessarily a strong indicator of how important respondents view skincare.
+
+The plot challenges gender stereotypes, as both men and women show diverse attitudes across the full range of skincare importance ratings. The relationship between ingredient knowledge and importance also appears consistent across genders. 
+
+Given that male respondents are distributed throughout the plot, including at high levels of both metrics, this plot contradicts assumptions about men being universally less interested and knowledgeable in skincare.
+
+![](plots/skincare_spending_versus_importance_plot.png){#fig-9}
+
+From @fig-9, We can see that as average monthly spending on skincare increases, there appears to be a positive relationship with perceived skincare importance. This suggests that those who place a higher value on skincare tend to spend more on it, which is a fairly predictable finding.
+
+![](plots/skincare_malaysia_spending_plot.png){#fig-10}
+
+@fig-10 illustrates monthly skincare spending in Malaysian Ringgit by gender. The data shows that women account for a larger proportion of spenders across all categories, which is expected given that there are more females than males in the sample. However, the disparity between males and females becomes notably larger in the higher spending brackets. Specifically, men comprise about 40% of the lowest spending category but only about 10% of the highest. This graph supports the claim that men spend less on skincare than women. When viewed alongside @fig-9, we can also conclude that men seem to care less about skincare, as @fig-9 shows they tend to spend less monthly. However, the presence of men in the data challenges the notion that men don't care about or invest in skincare at all.
+
+By recognizing that women in the sample tend to spend more on skincare, have more experience, and therefore exhibit more perceived importance around skincare, it becomes clear that gender-based preferences and priorities exist in the realm of skincare, shaping how skincare products might be marketed, developed, and tailored to respective demographics (particularly in Malaysia). The data may also suggest that there is a gap in how skincare is marketed to men, despite their obvious presence in the market, providing insight into how different genders may adapt to and accept AI-driven skincare technologies.
+
+## Prominent Skin Concerns
+
+This section of the report will identify the most prominent skin concerns among respondents. The current list of concerns includes oily skin, acne breakouts, combination skin, uneven skin tone, brown spots, dry skin, pigmentation, redness, wrinkles, clogged pores, and eczema. This analysis is important for uncovering potential relationships between skin concerns and other variables, as well as providing insights that may aid in the targeted application of AI technology to address the most prominent conditions.
+
+![](plots/skincare_malaysia_skin_types_yes_plot.png){#fig-11}
+
+@fig-11 displays the most common skin types among respondents. From the above bar graph, we can see that combination skin, acne breakouts and oily skin are the most prominent concerns, respectively, while very few respondents experience eczema or clogged pores. Additionally, only a small number of respondents identify as having 'normal' skin. It is important to note that respondents were allowed to select multiple skin concerns. Later analysis will evaluate the written responses regarding individual respondents' motivations to better understand their priorities.
+
+For this section we will focus on the overall numbers when analyzing the frequency of skin concerns among respondents.
+
+![](plots/skin_types_cultural_identities_comparison_plot.png){#fig-12}
+
+
+
+From the above figures we can see variations in skin concerns across cultural identities. Oily skin and acne breakouts often align, suggesting a relationship between these conditions. Given that the number of respondents for all cultural identities besides Malaysians and possibly Chinese appears limited, it would be inaccurate to draw broad conclusions from these results. However, we can see that East/Southeast Asian groups (Chinese, Malaysian) consistently show similar patterns across all skin concerns, with ~40% prevalence, whereas the few Korean, Nigerian, Libyan, and Indian respondents show no combination skin concerns. From the above figures, we can see that there is slight variation among skin concerns across cultural identities. However, the more prevalent populations in the sample seem to experience them all to a significant degree. This provides insight into how different cultural identities may perceive AI technology targeting certain aspects of skincare.
+
+![](plots/skincare_malaysia_skin_types_yes_gender_plot.png){#fig-13}
+
+@fig-13 displays the proportion of respondents who identified with various skin concerns by gender. From the graph, we can see that among the three most prevalent concerns, females experience more issues with acne breakouts and combination skin than males, while males experience more issues with oily skin than females. Among the other less prevalent skin concerns, women face more issues with brown spots, clogged pores, dry skin, pigmentation, redness, and uneven skin—almost all other skin concerns. Men, on the other hand, experience more issues with eczema and wrinkles.
+
+This indicates that females seem to struggle with a broader range of skincare issues, which may explain why they view skincare as more important and are willing to spend more on it, as observed in @tbl-importance_by_gender and @fig-10. This could be caused by a variety of factors, such as hormones. This information may be useful when establishing gender-specific treatments or product recommendations. 
+
+Women may also be more critical of their skin, as previously shown in @tbl-importance_by_gender, where women, on average, rated skincare as highly important. This emphasis on skincare may make them more specific and critical in their assessments.
+
+Overall, this section of the report provides insights into how companies might produce/advertise products to target skin concerns for different demographics.
+
+## Respondent Perceptions of AI Skincare Technology
+
+This final portion of the evaluation section will review respondent perceptions of AI and explore the factors that influence these perceptions by analyzing them against other variables. This analysis will help understand the underlying reasons for respondents' reservations about using skincare AI technology, which has the potential to enhance their efficiency, knowledge, and skin health.
+
+![](plots/technology_ai_perceptions_comparison_plot.png){#fig-14}
+
+@fig-14 shows that while some respondents have an overall positive perception of general technology, their perceptions become negative when it comes to AI. This suggests that there are concerns unique to the use of AI, highlighting the importance of understanding respondents' reservations in order to tailor future AI products and address these concerns. 
+
+```{r}
+#| label: tbl-skincare-malaysia-ingredient-perceptions
+#| tbl-cap: "Respondent Preferences for Skincare Ingredients in Malaysia"
+#| echo: false
+
+skincare_malaysia_ingredient_perceptions <- skincare_malaysia |>
+  mutate(
+    natural_ingredients = if_else(str_detect(ingredient_preference, "Natural ingredients"), "yes", "no"),
+    aoncomedogenic_ingredients = if_else(str_detect(ingredient_preference, "Noncomedogenic ingredients (ingredients that do not block pores)"), "yes", "no"),
+    alcohol_free_ingredients = if_else(str_detect(ingredient_preference, "Alcohol-free ingredients"), "yes", "no"),
+    oil_free_ingredients = if_else(str_detect(ingredient_preference, "Oil-free ingredients"), "yes", "no"),
+    petroleum_free_ingredients = if_else(str_detect(ingredient_preference, "Petroleum-free ingredients"), "yes", "no"),
+    dye_free_ingredients = if_else(str_detect(ingredient_preference, "Dye-free ingredients"), "yes", "no"),
+    low_ph_ingredients = if_else(str_detect(ingredient_preference, "Low pH"), "yes", "no"),
+    fragrance_free_ingredients = if_else(str_detect(ingredient_preference, "fragrance-free"), "yes", "no"),
+  )  |>
+  relocate(
+    natural_ingredients:fragrance_free_ingredients, 
+    .after = ingredient_preference
+  )
+
+
+skincare_malaysia_ingredient_perceptions_yes <- skincare_malaysia_ingredient_perceptions |>
+  summarize(
+    natural_ingredients = sum(str_detect(ingredient_preference, "Natural ingredients")),
+    aoncomedogenic_ingredients = sum(str_detect(ingredient_preference, "Noncomedogenic ingredients (ingredients that do not block pores)")),
+    alcohol_free_ingredients = sum(str_detect(ingredient_preference, "Alcohol-free ingredients")),
+    oil_free_ingredients = sum(str_detect(ingredient_preference, "Oil-free ingredients")),
+    petroleum_free_ingredients = sum(str_detect(ingredient_preference, "Petroleum-free ingredients")),
+    dye_free_ingredients = sum(str_detect(ingredient_preference, "Dye-free ingredients")),
+    low_ph_ingredients = sum(str_detect(ingredient_preference, "Low pH")),
+    fragrance_free_ingredients = sum(str_detect(ingredient_preference, "fragrance-free")) 
+  ) |>
+  pivot_longer(
+    cols = everything(),
+    names_to = "ingredient_preferences", 
+    values_to = "yes_count"
+  ) |>
+  rename(
+    "Ingredients" = ingredient_preferences,
+    "Respondent Preferences" = yes_count
+    
+  )
+
+kable(skincare_malaysia_ingredient_perceptions_yes)
+```
+
+
+@tbl-skincare-malaysia-ingredient-perceptions shows respondent ingredient preferences. The table indicates that natural ingredients are the most desired for skincare products, followed by alcohol-free ingredients. This is intuitive, as natural ingredients are often perceived as cleaner and less harmful to the body.
+
+![](plots/skincare_malaysia_ingredient_perceptions_plot.png){#fig-15}
+
+By comparing respondent preferences for natural ingredients and their excitement about AI, as shown in @fig-15, we observe that those who prefer natural ingredients exhibit lower variability in excitement but have more extreme outliers, indicating that some members of this group are significantly less excited about AI. Although the medians for both groups are similar, the "yes" group shows a narrower range of responses. This suggests that individuals who prefer natural ingredients might be more skeptical or less enthusiastic about AI overall.
+
+This suggests that individuals may oppose AI due to a preference for natural, simple, and traditional methods. A preference for natural products may also reflect strong environmental values, which could conflict with the perceived impact of AI. These are just some of the many potential reasons why those who value natural ingredients are likely to be less supportive of AI technology.
+
+![](plots/time_finding_routine_excitment_skincare_plot.png){#fig-16}
+
+As seen in @fig-16, there is a large spread of data that does not show a clear relationship between excitement about AI in skincare and the time spent finding a skincare routine. People who spend both little and a lot of time researching skincare routines show varying levels of excitement (1-5) about AI skincare, with most responses clustering between 3.5 and 5 on the excitement scale. The box plots indicate wide ranges at each time interval, suggesting high variability in attitudes regardless of time investment. This implies that respondents who are interested in AI are not necessarily those spending the most time finding their routine. It’s possible that respondents are more interested in AI to gain a better understanding of product composition.
+
+![](plots/desire_know_more_excitment_skincare_plot.png){#fig-17}
+
+@fig-17 indicates that people who show higher excitement about AI in skincare also tend to express a stronger desire to learn more about skincare. This positive correlation suggests that the potential for gaining better skincare knowledge may be driving excitement about AI use in this field.
+
+A common topic of conversation among Southeast Asians is the idea of "glass skin," which is inspired by the often flawless complexion of Koreans. It is described as an incredibly dewy, smooth, hydrated, and glowing look. In Korea, this type of skin is considered ideal. An interviewee from Allure explains that glass skin "means skin that looks crystal-clear, poreless, translucent, [and] luminous — like a piece of glass" (Fasanella, 2022).
+
+This look is often achieved through numerous layers of moisturizers, toners, and cleansers. It has gained viral popularity online. However, it is important to note that this trend originates from Korean culture, and many different ethnicities have varying skin types that may make achieving this look difficult or even unattainable. 
+
+As previously shown in @fig-11, very few respondents identified as having 'normal' skin; in fact, only one respondent selected this option. This is ironic, considering that 'normal' skin actually encompasses a range of characteristics, including those found in acne-prone, combination, and oily skin types. This further reinforces the perception that skin must be flawless. Despite all aformentioned skin types being common and ultimatley normal, the glass skin trend remains highly desired across Southeast Asia.
+
+As a result, respondents' free-answer questions related to their skincare motivations will be coded to identify those who explicitly or alluded to a desire for glass skin.
+
+
+```{r}
+#| label: tbl-respondents-glass-skin
+#| tbl-cap: "Respondents Wanting 'Glass Skin'"
+#| echo: false
+
+skincare_malaysia_motivations <- skincare_malaysia |>
+  filter( 
+    !is.na(motivations)
+  ) |>
+  mutate(
+    motivations = str_to_lower(motivations),
+    glass_skin = if_else(str_detect(motivations, c("glowing|glass|flawless|bright|clear")), "yes", "no")
+  ) |>
+  count(glass_skin) |>
+  mutate(
+    proportion = n / sum(n)
+  )
+
+kable(skincare_malaysia_motivations)
+```
+
+From the above, we can see that out of those who responded to the optional free-answer question, 33% mentioned "glass skin," highlighting how this viral trend is shaping the motivations of individuals, even within the relatively small study sample.
+
+Understanding the desire for "glass skin" provides valuable insight into consumer behavior, demonstrating how societal beauty standards drive skincare routines and product choices. These results also underscore the need to diversify beauty standards away from the concept of 'perfection.'
+
+This last section of the report highlights consumer perceptions of AI technology, providing insights into which marketing strategies and products may or may not be successful across different demographics.
+
+# Conclusion
+
+## Summary of Findings
+
+This report provides valuable insights into how companies producing or advertising AI skin scanning technologies may approach different demographics in Malaysia, based on data analysis of varying perceptions between males and females, the most prominent skin concerns, and attitudes toward AI.
+
+The most represented demographic in the sample were Malaysians, females, and students, while other demographics were also included, though to a much lesser extent. In regard to existing stereotypes depicting men as less hygienic/concerned with appearance, the survey revealed that women tend to spend more on skincare, view it as more important, and have more experience using it. However, the presence of men in the data challenges the notion that men don’t care about or invest in skincare at all, suggesting a possible lack of targeted marketing or products for men. 
+
+The data also displayed that combination skin, acne breakouts, and oily skin are the most common concerns, respectively, across all respondents, also highlighting that females face a wider variety of skin concerns compared to males. 
+
+Lastly, reviewing responses to all technology and AI-related survey questions, revealed that individuals who prefer natural ingredients tend to be more opposed to AI. Interestingly, it also showed that those who spend more time searching for skincare products are not necessarily more excited about the potential of AI. This section highlights that respondents with a strong desire to learn more about skincare are generally more enthusiastic about the potential for AI. Additionally, it demonstrates that few respondents with positive perceptions of general technology held negative perceptions of AI, underscoring a unique concern specifically regarding the use of AI.
+
+These are the major findings of the report. The results were not particularly surprising but served to reinforce certain assumptions, such as the fact that females tend to perceive skincare as more important and that individuals with a preference for natural ingredients are generally more opposed to technology. Regardless these findings still provide insight on different attitudes towards skincare and technology.
+
+## Further Investigation
+
+Given that this data was collected in 2021, before the significant surge in AI technology, it would be valuable to gather updated data on the same demographic to track changes in perceptions and preferences. This would help determine if opinions have shifted and if certain skin concerns have become more prominent, especially as social media usage has also increased.
+
+A comparative analysis with similar samples from Western cultures could also provide valuable insights into whether there are differing concerns or similar ideals surrounding skin health across the globe. For instance, concepts like "glass skin," which are prevalent in Asian cultures, might not have the same impact or significance in Western contexts.
+
+# Use of AI
+
+This analysis utilized AI, specifically ChatGPT-4 and ChatGPT-3, for problem-solving, as well as for spelling and grammar checks. Text was frequently input into ChatGPT to review and correct spelling and grammar. On a few occasions, code was also input into ChatGPT for debugging; however, the platform did not prove to be particularly helpful in this regard, producing overly complicated solutions using unfamiliar functions and arguments.
+
+# Works Cited
+
+YouCam, T. (2024, December 4). 4 popular skin scanners & skin analysis machines in 2025: Perfect. Beauty AR Company and Makeup AR Technology Platform. https://www.perfectcorp.com/business/blog/ai-skincare/four-popular-skin-scanner-features-prices-size#1688725289672-24 
+
+Kaleigh Fasanella, M. R. (2022, August 7). What is “Glass skin” and how can you get it? Allure. https://www.allure.com/story/how-to-get-glass-skin-korean-beauty 
+
+
+
+
