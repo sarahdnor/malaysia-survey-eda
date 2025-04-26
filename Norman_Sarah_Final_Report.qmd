@@ -47,7 +47,7 @@ skincare_malaysia_codebook <- read_csv("data/skincare_malaysia_2021_codebook.csv
 
 ## Github Repo Link
 
-[Sarah's Repo Link](https://github.com/stat301-1-2024-fall/final-project-1-sarahdnor.git)
+[Sarah's Repo Link](https://github.com/sarahdnor/malaysia-survey-eda.git)
 
 :::
 
